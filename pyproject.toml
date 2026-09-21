@@ -29,6 +29,7 @@ dependencies = [
     "numpy>=2",
     "matplotlib>=3.10",
     "tqdm>=4.67",
+    "czifile>=2026.8,<2027",
 ]
 dynamic = ["version"]
 
