@@ -1,0 +1,110 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "3d-nucleus-segmentation"
+authors = [
+    {name = "Timothé Berland", email = "timothe.berland@etu.emse.fr"},
+]
+description = "3D Nucleus Segmentation"
+readme = "README.md"
+requires-python = ">=3.10"
+keywords = ["mines-st-etienne", "cis", "cells", "nuclei", "3D", "segmentation", "image processing"]
+license = "BSD-3-Clause"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Natural Language :: English",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Image Processing",
+]
+dependencies = [
+    "numpy>=2",
+    "matplotlib>=3.10",
+    "tqdm>=4.67",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+notebook = ["jupyterlab"]
+linter = ["ruff"]
+test = ["pytest"]
+docs = ["jupyter-book"]
+dev = [
+    "jupyterlab",
+    "ruff",
+    "pytest",
+    "jupyter-book",
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "nucleus_segmentation.__version__"}
+
+# Ruff config
+[tool.ruff]
+line-length = 90
+
+[tool.ruff.lint]
+select = [
+    "F",    # Pyflakes
+    "E",    # pycodestyle
+    "W",    # pycodestyle
+    "PL",   # Pylint
+    "I",    # isort
+    "N",    # pep8-naming
+    "C90",  # mccabe
+    "UP",   # pyupgrade
+    "S",    # flake8-bandit
+    "A",    # flake8-builtins
+    "B",    # flake8-bugbear
+    "SIM",  # flake8-simplify
+    "COM",  # flake8-commas
+    "C4",   # flake8-comprehensions
+    "T20",  # flake8-print
+    "Q",    # flake8-quotes
+    "RSE",  # flake8-raise
+    "RET",  # flake8-return
+]
+ignore = [
+    "COM812",  # disable ruff format warning
+    "E501",    # disable ruff line-too-long error
+    "S603",    # disable subprocess-without-shell-equals-true (see PyCQA/bandit#333)
+    "T201", # disable 'print' found warning
+]
+
+[tool.ruff.format]
+quote-style = "single"
+
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = "single"
+docstring-quotes = "double"
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = [
+    "S101",     # assert
+    "PLR2004",  # magic-value-comparison
+]
+
+[tool.ruff.lint.isort]
+section-order = [
+  "future",
+  "standard-library",
+  "third-party",
+  "first-party",
+  "local-folder",
+  "testing",
+]
+known-first-party = ["nucleus_segmentation"]
+
+[tool.ruff.lint.isort.sections]
+testing = ["pytest"]
