@@ -27,7 +27,7 @@ classifiers = [
 ]
 dependencies = [
     "numpy>=2",
-    "matplotlib>=3.10",
+    "matplotlib>=3.10,<3.11",
     "tqdm>=4.67",
     "czifile>=2026.8,<2027",
 ]
