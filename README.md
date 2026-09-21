@@ -1,38 +1,18 @@
-# 3D Nucleus Segmentation
+3D Nucleus Segmentation
+=========================
 
-## Local development
-
-Clone this repository:
-
+Local development
+-----------------
+Clone this repo:
+```bash
 git clone https://github.com/Koot5958/3d-nucleus-segmentation.git
 cd 3d-nucleus-segmentation
+```
 
-Create and activate a virtual environment:
-
-### Windows (PowerShell)
-
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-
-### Linux / macOS
-
-python -m venv .venv
-source .venv/bin/activate
-
-Install the package and its development dependencies:
-
+Install the package and its the required dependencies:
+```bash
+python -m venv venv
+source venv/bin/activate
+# For Windows (PowerShell): venv\Scripts\Activate.ps1
 python -m pip install -e ".[dev]"
-
-## Development
-
-Run the linter:
-
-ruff check .
-
-Run the tests:
-
-pytest
-
-## Documentation
-
-Documentation will be added here as the project develops.
+```
