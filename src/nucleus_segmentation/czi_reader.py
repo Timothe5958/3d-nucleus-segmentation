@@ -1,5 +1,6 @@
 """CZI Reader"""
 
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from czifile import CziFile
@@ -15,9 +16,23 @@ class CziReader:
 
         with CziFile(self.path) as czi:
             self.scene = czi.scenes[0]
-            self.np_image = self.scene.asarray()
+            self.raw_data = self.scene.asarray()
+            self.parsed_metadata = ET.fromstring(czi.metadata())
 
+    def get_raw_slice(self, slice_id):
+        """Returns a slice of the data not resampled."""
+        return self.raw_data[slice_id,:,:]
 
-    def get_slice(self, slice_id):
-        return self.np_image[slice_id,:,:]
+    def get_raw_segment(self, start_id, stop_id):
+        """Returns a segment of the data not resampled."""
+        return self.raw_data[start_id:stop_id, :, :]
+
+    def get_raw_data_dimensions(self):
+        height = int(self.parsed_metadata.find('.//CameraFrameHeight').text)
+        width = int(self.parsed_metadata.find('.//CameraFrameWidth').text)
+        depth = int(self.parsed_metadata.find('.//DimensionZ').text)
+        return (depth, height, width)
+
+    def get_resampled_data(self):
+        """Returns the resampled data. We aim to have one micrometers per voxel (by interpolation)"""
 
