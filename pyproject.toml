@@ -76,6 +76,7 @@ ignore = [
     "E501",    # disable ruff line-too-long error
     "S603",    # disable subprocess-without-shell-equals-true (see PyCQA/bandit#333)
     "T201", # disable 'print' found warning
+    "S314", # disable untrusted xml files
 ]
 
 [tool.ruff.format]
