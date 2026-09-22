@@ -4,6 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "3d-nucleus-segmentation"
+version = "0.0.1"
 authors = [
     {name = "Timothé Berland", email = "timothe.berland@etu.emse.fr"},
 ]
@@ -30,8 +31,8 @@ dependencies = [
     "matplotlib>=3.10,<3.11",
     "tqdm>=4.67",
     "czifile>=2026.8,<2027",
+    "scikit-image>=0.25,<0.27",
 ]
-dynamic = ["version"]
 
 [project.optional-dependencies]
 notebook = ["jupyterlab"]
@@ -44,9 +45,6 @@ dev = [
     "pytest",
     "jupyter-book",
 ]
-
-[tool.setuptools.dynamic]
-version = {attr = "nucleus_segmentation.__version__"}
 
 # Ruff config
 [tool.ruff]
