@@ -4,6 +4,9 @@
 # data folder
 /data
 
+# output folder
+*/outputs
+
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
