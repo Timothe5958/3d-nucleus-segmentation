@@ -3,6 +3,7 @@
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+import numpy as np
 from czifile import CziFile
 
 
@@ -33,6 +34,8 @@ class CziReader:
         depth = int(self.parsed_metadata.find('.//DimensionZ').text)
         return (depth, height, width)
 
-    def get_resampled_data(self):
-        """Returns the resampled data. We aim to have one micrometers per voxel (by interpolation)"""
-
+    def get_voxels_size(self):
+        x = float(self.parsed_metadata.find('.//ScalingX').text)
+        y = float(self.parsed_metadata.find('.//ScalingY').text)
+        z = float(self.parsed_metadata.find('.//ScalingZ').text)
+        return np.array([z, x, y])
