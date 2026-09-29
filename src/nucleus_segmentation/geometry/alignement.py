@@ -2,6 +2,9 @@ import math
 
 import numpy as np
 from scipy import ndimage
+from sklearn.linear_model import LinearRegression
+
+from nucleus_segmentation.utils import fast_binarization
 
 
 def find_groove_bottoms(data):
@@ -10,10 +13,14 @@ def find_groove_bottoms(data):
     _, x_dim, y_dim = data.shape
     points = []
 
-    for y in y_dim:
-        plane = data[:, y, :]
+    for y in range(y_dim):
+        plane = data[:, :, y]
 
-        z_min = np.where(plane)[0].min()
+        z_indices = np.where(plane)[0]
+        if len(z_indices) == 0:
+            continue
+
+        z_min = z_indices.min()
         z_max = z_min + 8
 
         x_min, x_max = x_dim//2-20, x_dim//2+20
@@ -60,8 +67,8 @@ def find_groove_bottoms(data):
             # compute the proportion of inside/outside px
             z_grid, x_grid = np.indices(plane.shape)
 
-            line_left = z + (x_grid - x)
-            line_right = z - (x_grid - x)
+            line_left = z + (x_grid - x_0)
+            line_right = z - (x_grid - x_0)
 
             outside = (z_grid <= line_left) | (z_grid <= line_right)
             n_outside, n_total = np.sum(plane[outside]), np.sum(plane)
@@ -70,21 +77,50 @@ def find_groove_bottoms(data):
                 updated_z_0 = z
                 break
 
-        points.append(updated_z_0, y, x_0)
+        points.append([updated_z_0, x_0, y])
 
     return np.array(points)
 
 
 def find_rotation_angle(x, z):
-    slope = np.polyfit(x, z, 1)[0]
+    model = LinearRegression()
+    model.fit(np.asarray(x).reshape(-1, 1), z)
+
+    slope = model.coef_[0]
     return np.arctan(slope)
 
 
 def rotate(data):
-    binary_data = ...
-    groove_bottoms = find_groove_bottoms(data)
-    phi = find_rotation_angle(groove_bottoms[:, 1], groove_bottoms[:, 0])
-    rotated_data = ndimage.rotate(data, math.degrees(phi), axes=(0,1))
+    binary_data = fast_binarization(data)
 
-    binary_rotated_data = ...
+    # find phi
+    groove_bottoms = find_groove_bottoms(binary_data)
+    phi = find_rotation_angle(groove_bottoms[:, 1], groove_bottoms[:, 0])
+    print('Phi rotation angle =', math.degrees(phi), 'degrees')
+
+    # Apply a rotation of angle phi on the image + binarization
+    rotated_data = ndimage.rotate(
+        data,
+        math.degrees(phi),
+        axes=(0, 1),
+        order=1,
+        mode='constant',
+        cval=data.min(),
+    )
+    binary_rotated_data = fast_binarization(rotated_data)
+
+    # Find Theta
+    groove_bottoms_rotated = find_groove_bottoms(binary_rotated_data)
+    theta = find_rotation_angle(groove_bottoms_rotated[:,1], groove_bottoms_rotated[:,2])
+    print('Theta rotation angle =', math.degrees(theta), 'degrees')
+
+    # Apply a rotation of angle theta on the image + binarization
+    return ndimage.rotate(
+        rotated_data,
+        -math.degrees(theta),
+        axes=(1, 2),
+        order=1,
+        mode='constant',
+        cval=data.min(),
+    )
 
