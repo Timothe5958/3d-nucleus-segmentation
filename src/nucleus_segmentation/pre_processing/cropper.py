@@ -25,6 +25,8 @@ class Cropper:
                 sigma=(3, 3, 3),
             )
 
+            """Utiliser la fast_binarization à la place ici"""
+
             # binarisation of the image
             otsu_th = skimage.filters.threshold_otsu(self.denoised)
             self.binary = self.denoised > otsu_th
