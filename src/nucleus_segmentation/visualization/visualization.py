@@ -4,6 +4,8 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import napari
 
+from ..geometry.origin import find_axis_origin
+
 
 class Visualization:
 
@@ -31,6 +33,21 @@ class Visualization:
 
         viewer = napari.Viewer(show=True, ndisplay=3)
         viewer.add_image(data, opacity=1.0, scale=(1, 1, 1))
+
+        # Adding the axis
+        viewer.dims.set_axis_label(0, 'Z')
+        viewer.dims.set_axis_label(1, 'X')
+        viewer.dims.set_axis_label(2, 'Y')
+        viewer.axes.visible = True
+
+        # Adding the origin
+        origin = find_axis_origin(data)
+        viewer.add_points(
+            [origin],
+            size=3,
+            symbol='cross',
+            face_color='white',
+        )
 
         viewer.scene.camera.angles = camera_rotation
         viewer.scene.camera.zoom = 1
