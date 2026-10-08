@@ -46,7 +46,7 @@ def find_reference_cube(cubes):
     return cubes[np.argmax(average_inten_groups)]
 
 
-def normalize_data_intensity(data, cube_size=30, alpha=0.1, empty_cubes_th=100):
+def normalize_intensity(data, cube_size=30, alpha=0.1, empty_cubes_th=100):
     # split the data into cubes
     cubes, cubes_coords = split_in_cubes(data, cube_size=cube_size)
 

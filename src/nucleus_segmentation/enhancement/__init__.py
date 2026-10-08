@@ -1,5 +1,5 @@
-from .normalization import normalize_data_intensity
+from .normalization import normalize_intensity
 
 __all__ = [
-    'normalize_data_intensity',
+    'normalize_intensity',
 ]
