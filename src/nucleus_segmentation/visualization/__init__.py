@@ -1,7 +1,9 @@
 """Visualization tools."""
 
-from .visualization import Visualization
+from .visualization import open_3d_view, save_histogram, save_projected_view
 
 __all__ = [
-    'Visualization',
+    'open_3d_view',
+    'save_projected_view',
+    'save_histogram',
 ]

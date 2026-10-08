@@ -1,4 +1,3 @@
-import gc
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -7,55 +6,79 @@ import napari
 from ..geometry.origin import find_axis_origin
 
 
-class Visualization:
+def save_histogram(data, output_path):
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    @staticmethod
-    def save_histogram(data, output_path):
-        output_path = Path(output_path)
-        output_path.parent.mkdir(parents=True, exist_ok=True)
+    plt.figure()
+    plt.hist(data.ravel(), bins=512)
+    plt.yscale('log')
 
-        plt.figure()
-        plt.hist(data.ravel(), bins=512)
-        plt.yscale('log')
+    plt.xlabel('Intensity')
+    plt.ylabel('Number of voxels')
+    plt.title('Intensity histogram')
+    plt.tight_layout()
 
-        plt.xlabel('Intensity')
-        plt.ylabel('Number of voxels')
-        plt.title('Intensity histogram')
-        plt.tight_layout()
+    plt.savefig(output_path, dpi=150)
+    plt.close()
 
-        plt.savefig(output_path, dpi=150)
-        plt.close()
 
-    @staticmethod
-    def save_2d_view(data, output_path, camera_rotation):
-        output_path = Path(output_path)
-        output_path.parent.mkdir(parents=True, exist_ok=True)
+def _create_3d_view(data, camera_rotation, mode, show=False):
+    viewer = napari.Viewer(show=show, ndisplay=3)
 
-        viewer = napari.Viewer(show=True, ndisplay=3)
-        viewer.add_image(data, opacity=1.0, scale=(1, 1, 1))
+    viewer.add_image(
+        data,
+        opacity=1.0,
+        scale=(1, 1, 1),
+        rendering=mode,
+        iso_threshold=0,
+    )
 
-        # Adding the axis
-        viewer.dims.set_axis_label(0, 'Z')
-        viewer.dims.set_axis_label(1, 'X')
-        viewer.dims.set_axis_label(2, 'Y')
-        viewer.axes.visible = True
+    # Add axis
+    viewer.dims.set_axis_label(0, 'Z')
+    viewer.dims.set_axis_label(1, 'X')
+    viewer.dims.set_axis_label(2, 'Y')
+    viewer.axes.visible = True
 
-        # Adding the origin
-        origin = find_axis_origin(data)
-        viewer.add_points(
-            [origin],
-            size=3,
-            symbol='cross',
-            face_color='white',
-        )
+    viewer.scene.camera.angles = camera_rotation
 
-        viewer.scene.camera.angles = camera_rotation
-        viewer.scene.camera.zoom = 1
-        viewer.screenshot(path=output_path, canvas_only=True)
+    return viewer
 
-        # Close
-        # viewer.close()
 
-        # Free memory
-        del viewer
-        gc.collect()
+def open_3d_view(data, camera_rotation):
+    viewer = _create_3d_view(
+        data,
+        camera_rotation,
+        show=True,
+    )
+
+    # Add origin to the view
+    origin = find_axis_origin(data)
+    viewer.add_points(
+        [origin],
+        size=4,
+        symbol='cross',
+        face_color='white',
+    )
+
+    napari.run()
+
+
+def save_projected_view(data, name, mode='mip', camera_rotation=(95, 0, -70)):
+    output_path = Path('outputs/3d_previews/projected_' + name + '.png')
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    viewer = _create_3d_view(
+        data,
+        camera_rotation,
+        mode,
+        show=True,
+    )
+
+    # take the image with a set angle of view
+    viewer.screenshot(
+        path=output_path,
+        canvas_only=True,
+    )
+
+    viewer.close()
