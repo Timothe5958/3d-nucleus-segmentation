@@ -130,7 +130,7 @@ def from_cubes_to_normalized(data, cubes, cubes_coords, sigma=15, alpha=0.1):
     )
 
 
-def normalize_intensity_shift_method(data, cube_size=30, sigma=15, alpha=0.1, empty_cubes_th=100):
+def normalize_intensity_shift_method(data, cube_size=30, sigma=15, alpha=0.1):
     # split the data into cubes
     cubes, cubes_coords = split_in_cubes(data, cube_size=cube_size)
     normalized, gaussian = from_cubes_to_normalized(
@@ -139,7 +139,6 @@ def normalize_intensity_shift_method(data, cube_size=30, sigma=15, alpha=0.1, em
         cubes_coords,
         sigma=sigma,
         alpha=alpha,
-        empty_cubes_th=empty_cubes_th,
     )
 
     cubes_shift, cubes_coords_shift = split_in_cubes(data, cube_size=cube_size, shift=True)
@@ -149,7 +148,6 @@ def normalize_intensity_shift_method(data, cube_size=30, sigma=15, alpha=0.1, em
         cubes_coords_shift,
         sigma=sigma,
         alpha=alpha,
-        empty_cubes_th=empty_cubes_th,
     )
 
     return (
