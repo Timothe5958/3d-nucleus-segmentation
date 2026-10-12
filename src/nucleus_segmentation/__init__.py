@@ -1,7 +1,8 @@
 """3D Nucleus Segmentation"""
 
-from .czi_reader import CziReader
+from .observation import Observation, ObservationsList
 
 __all__ = [
-    'CziReader',
+    'Observation',
+    'ObservationsList',
 ]

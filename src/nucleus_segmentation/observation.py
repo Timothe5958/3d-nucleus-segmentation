@@ -1,19 +1,20 @@
 """CZI Reader"""
 
 import xml.etree.ElementTree as ET
+from collections import UserList
 from pathlib import Path
 
 import numpy as np
 from czifile import CziFile
 
 
-class CziReader:
+class Observation:
     """
     This class is used to make the access to data from the czi files easier.
     """
 
-    def __init__(self, path_str):
-        self.path = Path(path_str)
+    def __init__(self, path):
+        self.path = Path(path)
 
         with CziFile(self.path) as czi:
             self.scene = czi.scenes[0]
@@ -39,3 +40,25 @@ class CziReader:
         y = float(self.parsed_metadata.find('.//ScalingY').text)
         z = float(self.parsed_metadata.find('.//ScalingZ').text)
         return np.array([z, x, y])
+
+
+class ObservationsList(UserList):
+    """
+    This class is used to have an easy access on many observations from a folder's path. Every observation in this folder will be listed.
+
+    Parameters
+    ----------
+    path : Path
+        This is the path of the folder.
+
+    """
+
+    def __init__(self, folder_path):
+        self.path = Path(folder_path)
+
+        observations = []
+        for czi_path in self.path.glob('*.czi'):
+            observations.append(Observation(path=czi_path))
+
+        self.data = observations
+
