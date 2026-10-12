@@ -1,6 +1,7 @@
+from datetime import datetime
 from pathlib import Path
 
-from .visualization import save_projected_view
+from .visualization import save_image_view, save_label_view
 
 
 class OutputManager:
@@ -26,7 +27,20 @@ class OutputManager:
 
         for name, should_save in outputs.items():
             if should_save:
-                save_projected_view(
-                    results[name],
-                    observation_folder / (name + '.png'),
-                )
+                if 'labelled' in name:
+                    save_label_view(
+                        results[name],
+                        observation_folder / (name + '.png'),
+                        cmap='cividis',
+                    )
+                elif 'segmented' in name:
+                    save_image_view(
+                        results[name],
+                        observation_folder / (name + '.png'),
+                        mode='iso',
+                    )
+                else:
+                    save_image_view(
+                        results[name],
+                        observation_folder / (name + '.png'),
+                    )

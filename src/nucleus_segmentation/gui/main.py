@@ -92,9 +92,10 @@ class MainWindow(QWidget):
             'resampled': QCheckBox('Resampled'),
             'denoised': QCheckBox('Denoised'),
             'cropped': QCheckBox('Cropped'),
-            'bg_removed': QCheckBox('Background removed'),
             'normalized': QCheckBox('Normalized'),
-            'processed': QCheckBox('Processed'),
+            'segmented': QCheckBox('Segmented'),
+            'segmented_clean': QCheckBox('Cleaned segmentation'),
+            'labelled': QCheckBox('Labelled'),
         }
 
         self.back_button = QPushButton('Retour')
@@ -205,9 +206,10 @@ class MainWindow(QWidget):
             save_resampled=self.output_checkboxes['resampled'].isChecked(),
             save_denoised=self.output_checkboxes['denoised'].isChecked(),
             save_cropped=self.output_checkboxes['cropped'].isChecked(),
-            save_bg_removed=self.output_checkboxes['bg_removed'].isChecked(),
             save_normalized=self.output_checkboxes['normalized'].isChecked(),
-            save_processed=self.output_checkboxes['processed'].isChecked(),
+            save_segmented=self.output_checkboxes['segmented'].isChecked(),
+            save_segmented_clean=self.output_checkboxes['segmented_clean'].isChecked(),
+            save_labelled=self.output_checkboxes['labelled'].isChecked(),
         )
 
 
@@ -218,7 +220,7 @@ class MainWindow(QWidget):
         processing_options = ProcessingOptions()
 
         output_folder = (
-            self.selected_folder / 'nucleus_segmentation_output'
+            self.selected_folder.parent / 'nucleus_segmentation_output'
         )
 
         process_observations(
@@ -227,7 +229,7 @@ class MainWindow(QWidget):
             output_options,
             output_folder,
             log=True,
-            reduction=0,
+            reduction=6,
         )
 
 
