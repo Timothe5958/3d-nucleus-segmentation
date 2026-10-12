@@ -9,7 +9,8 @@ class OutputManager:
         self.output_folder.mkdir(parents=True, exist_ok=True)
 
     def save_outputs(self, results, options, observation):
-        observation_folder = self.output_folder / observation.path.stem
+        date = datetime.now().strftime('%Y%m%d_%H%M%S')
+        observation_folder = self.output_folder / (observation.path.stem + '_' + date)
         observation_folder.mkdir(parents=True, exist_ok=True)
 
         outputs = {
