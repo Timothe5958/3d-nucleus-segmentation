@@ -1,12 +1,12 @@
 import numpy as np
 
-from ..segmentation import binarization_double_otsu
+from ..segmentation import binarization_otsu
 
 
 def crop_background(data):
     """Returns the cropped data."""
 
-    binary = binarization_double_otsu(data)
+    binary = binarization_otsu(data)
 
     # get the limits
     _, x_indices, y_indices = np.where(binary)

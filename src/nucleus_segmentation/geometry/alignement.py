@@ -4,7 +4,7 @@ import numpy as np
 from scipy import ndimage
 from sklearn.linear_model import LinearRegression
 
-from nucleus_segmentation.utils import fast_binarization
+from ..segmentation import binarization_otsu
 
 
 def find_groove_bottoms(data):
@@ -57,7 +57,7 @@ def find_groove_bottoms(data):
 
                 score = abs(ratio_left - ratio_right)
 
-                if best_score == -1 or score > best_score:
+                if best_score == -1 or score < best_score:
                     x_0, z_0, best_score = x, z, score
 
         # adjust the z_0 value, in order to have a certain proportion of
@@ -91,10 +91,11 @@ def find_rotation_angle(x, z):
 
 
 def rotate(data):
-    binary_data = fast_binarization(data)
+    binary_data = binarization_otsu(data)
 
     # find phi
     groove_bottoms = find_groove_bottoms(binary_data)
+    print(groove_bottoms)
     phi = find_rotation_angle(groove_bottoms[:, 1], groove_bottoms[:, 0])
     print('Phi rotation angle =', math.degrees(phi), 'degrees')
 
@@ -107,7 +108,7 @@ def rotate(data):
         mode='constant',
         cval=data.min(),
     )
-    binary_rotated_data = fast_binarization(rotated_data)
+    binary_rotated_data = binarization_otsu(rotated_data)
 
     # Find Theta
     groove_bottoms_rotated = find_groove_bottoms(binary_rotated_data)

@@ -1,6 +1,6 @@
-from .binarization import binarization_double_otsu, binarization_simple_otsu
+from .binarization import binarization_multiotsu, binarization_otsu
 
 __all__ = [
-    'binarization_double_otsu',
-    'binarization_simple_otsu',
+    'binarization_otsu',
+    'binarization_multiotsu',
 ]
