@@ -6,6 +6,7 @@
 
 # output folder
 */outputs
+*output
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
