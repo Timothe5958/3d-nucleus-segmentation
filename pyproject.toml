@@ -81,6 +81,7 @@ ignore = [
     "S603",    # disable subprocess-without-shell-equals-true (see PyCQA/bandit#333)
     "T201", # disable 'print' found warning
     "S314", # disable untrusted xml files
+    "RET504", # disable variable used only for return
 ]
 
 [tool.ruff.format]
