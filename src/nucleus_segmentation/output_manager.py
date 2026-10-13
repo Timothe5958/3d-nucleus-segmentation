@@ -27,13 +27,13 @@ class OutputManager:
 
         for name, should_save in outputs.items():
             if should_save:
-                if 'labelled' in name:
+                if name == 'labelled':
                     save_label_view(
                         results[name],
                         observation_folder / (name + '.png'),
                         cmap='cividis',
                     )
-                elif 'segmented' in name:
+                elif name in ('segmented', 'segmented_clean'):
                     save_image_view(
                         results[name],
                         observation_folder / (name + '.png'),
