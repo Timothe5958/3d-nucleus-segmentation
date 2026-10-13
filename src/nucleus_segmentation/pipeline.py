@@ -9,12 +9,11 @@ class ProcessingOptions:
     gaussian_ksize: int = 2
     cube_size: int = 60
     alpha: float = 0.3
-    sigma: int = 15
-    segm_nb_classes: int = 3
+    sigma: int = 8
     min_cell_size: int = 1000
 
 
-def process_observation(observation, options, log=False, reduction=1):
+def process_observation(observation, options, log=False, reduction=0):
     if reduction == 0:
         raw_data = observation.raw_data
     else:
@@ -53,7 +52,7 @@ def process_observation(observation, options, log=False, reduction=1):
         print('segmentation...')
     segmented_data = segmentation.binarization_multiotsu(
         normalized_data,
-        classes=options.segm_nb_classes,
+        classes=3,
     )
 
     if log:
