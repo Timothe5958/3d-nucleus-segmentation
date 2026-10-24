@@ -7,6 +7,8 @@ from pathlib import Path
 import numpy as np
 from czifile import CziFile
 
+from .gui.main import metadata
+
 
 class Observation:
     """
@@ -20,6 +22,13 @@ class Observation:
         self._parsed_metadata = None
         self._scene = None
         self._origin = None
+
+        # add metadata
+        metadata.add(
+            f'observations.{self.name}',
+            voxel_dimensions=self.get_voxel_dims(),
+            resampled_voxel_size=self.get_resampled_voxel_size(),
+        )
 
     def get_raw_data(self):
         if self._raw_data is None:

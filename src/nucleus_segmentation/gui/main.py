@@ -4,7 +4,10 @@ from PySide6.QtWidgets import (
     QApplication,
 )
 
+from ..metadata_saver import MetadataCollector
 from .main_window import MainWindow
+
+metadata = MetadataCollector()
 
 
 def main():
