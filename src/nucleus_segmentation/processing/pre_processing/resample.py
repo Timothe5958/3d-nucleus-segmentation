@@ -4,7 +4,7 @@ from scipy import ndimage
 
 def resample_isotropic(data, voxel_sizes):
     """
-    Returns the resampled data, using cache to avoid computing multiple times.
+    Returns the resampled data.
 
     Note
     ____
