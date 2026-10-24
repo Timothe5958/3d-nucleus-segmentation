@@ -10,12 +10,12 @@ class ProgressPage(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle('Traitement en cours')
+        self.setWindowTitle('Processing')
         self.resize(500, 250)
 
         # Global progress
         self.global_label = QLabel(
-            'Observation(s) traitée(s) : 0/0'
+            'Observation(s) processed : 0/0'
         )
 
         self.global_progress_bar = QProgressBar()
@@ -24,7 +24,7 @@ class ProgressPage(QWidget):
 
         # Current observation
         self.observation_label = QLabel(
-           'Etape en cours : 0/0'
+           'Current step : 0/0'
         )
 
         self.observation_progress_bar = QProgressBar()
@@ -64,7 +64,7 @@ class ProgressPage(QWidget):
 
         self.update_global_progress(0)
         self.update_observation_progress(0, '...', '...')
-        self.step_label.setText('Préparation du traitement...')
+        self.step_label.setText('Processing preparation...')
 
 
     def update_global_progress(self, completed_observations):
@@ -73,14 +73,14 @@ class ProgressPage(QWidget):
         )
 
         self.global_label.setText(
-            f'Observation(s) traitée(s) : {completed_observations}/{self.total_observations}'
+            f'Observation(s) processed : {completed_observations}/{self.total_observations}'
         )
 
     def update_observation_progress(self, curr_step_id, current_obs_name, current_step_name):
         self.observation_progress_bar.setValue(curr_step_id)
 
         self.observation_label.setText(
-            f'Observation en cours de traitement : {current_obs_name}'
+            f'Observation in process : {current_obs_name}'
         )
 
         self.step_label.setText(
@@ -92,11 +92,11 @@ class ProgressPage(QWidget):
             self.total_observations
         )
         self.global_label.setText(
-            f'Traitement terminé : '
+            f'Processing done : '
             f'{self.total_observations}/'
             f'{self.total_observations} observations'
         )
 
         self.observation_progress_bar.setValue(self.total_steps)
-        self.observation_progress_bar.setFormat('Terminé — 100 %')
-        self.step_label.setText('Traitement terminé')
+        self.observation_progress_bar.setFormat('Done — 100 %')
+        self.step_label.setText('Processing done')

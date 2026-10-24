@@ -165,12 +165,12 @@ class MainWindow(QWidget):
 
     def handle_processing_failed(self, error_message):
         self.progress_page.step_label.setText(
-            f'Erreur pendant le traitement : {error_message}'
+            f'Error during the processing : {error_message}'
         )
 
         QMessageBox.critical(
             self,
-            'Erreur de traitement',
+            'Error of processing',
             error_message,
         )
 

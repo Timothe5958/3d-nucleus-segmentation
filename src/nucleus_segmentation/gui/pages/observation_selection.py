@@ -22,26 +22,26 @@ class ObservationSelectionPage(QWidget):
         super().__init__()
 
         # Folder selection
-        self.folder_label = QLabel('Aucun dossier sélectionné')
+        self.folder_label = QLabel('No folder selected')
 
-        self.select_folder_button = QPushButton('Choisir un dossier')
+        self.select_folder_button = QPushButton('Select a folder')
         self.select_folder_button.clicked.connect(self.select_folder)
 
         # List of the observations
         self.observations = []
         self.observation_checkboxes = []
 
-        self.observations_label = QLabel('Observations trouvées :')
+        self.observations_label = QLabel('Observation(s) found :')
         self.observations_list = QListWidget()
 
-        self.select_all_button = QPushButton('Tout sélectionner')
+        self.select_all_button = QPushButton('Select all')
         self.select_all_button.clicked.connect(self.select_all_observations)
 
-        self.deselect_all_button = QPushButton('Tout désélectionner')
+        self.deselect_all_button = QPushButton('Deselect all')
         self.deselect_all_button.clicked.connect(self.deselect_all_observations)
 
         # next page button
-        self.next_button = QPushButton('Suivant')
+        self.next_button = QPushButton('Next')
         self.next_button.clicked.connect(
             self.next_requested.emit
         )
@@ -66,7 +66,7 @@ class ObservationSelectionPage(QWidget):
     def select_folder(self):
         folder = QFileDialog.getExistingDirectory(
             self,
-            'Sélectionner le dossier contenant les données',
+            'Select the folder containing the data',
         )
 
         if not folder:

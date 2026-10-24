@@ -21,7 +21,7 @@ class OutputSelectionPage(QWidget):
         super().__init__()
 
         layout = QVBoxLayout()
-        layout.addWidget(QLabel('Sélection des plots'))
+        layout.addWidget(QLabel('Outputs selection'))
 
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
@@ -53,10 +53,10 @@ class OutputSelectionPage(QWidget):
         layout.addWidget(scroll_area)
 
         # Add navigation buttons
-        self.back_button = QPushButton('Retour')
+        self.back_button = QPushButton('Previous')
         self.back_button.clicked.connect(self.back_requested.emit)
 
-        self.run_button = QPushButton('Lancer')
+        self.run_button = QPushButton('Start process')
         self.run_button.clicked.connect(self.run_requested.emit)
 
         navigation_layout = QHBoxLayout()
