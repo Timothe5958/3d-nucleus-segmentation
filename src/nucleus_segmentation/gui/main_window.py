@@ -131,12 +131,6 @@ class MainWindow(QWidget):
         if event_type == 'step':
             # Réinitialiser le compteur au début de chaque observation.
             if observation_name != self.current_observation_name:
-                # last observation duration
-                if self.start_observation is not None:
-                    duration = format_elapsed_time(self.start_observation)
-                    self.progress_page.last_observation_duration.setText(
-                        f'Observation {self.last_observation_name} : {duration}'
-                    )
                 self.start_observation = time.time()
 
                 self.current_observation_name = observation_name
@@ -159,17 +153,15 @@ class MainWindow(QWidget):
                 self.completed_observations
             )
 
-            self.last_observation_name = self.current_observation_name
+            duration = format_elapsed_time(self.start_observation)
+            self.progress_page.last_observation_duration.setText(
+                f'Computation time for {self.current_observation_name} : {duration}'
+            )
+
             self.current_observation_name = None
 
     def handle_processing_finished(self):
         self.progress_page.finish()
-
-        # update last observation duration
-        duration = format_elapsed_time(self.start_observation)
-        self.progress_page.last_observation_duration.setText(
-            f'Temps de calcul pour {self.current_observation_name} : {duration}'
-        )
 
     def handle_processing_failed(self, error_message):
         self.progress_page.step_label.setText(
