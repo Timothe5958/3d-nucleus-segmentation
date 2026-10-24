@@ -15,47 +15,32 @@ class Observation:
 
     def __init__(self, path):
         self.path = Path(path)
+        self.name = self.path.stem
         self._raw_data = None
         self._parsed_metadata = None
         self._scene = None
+        self._origin = None
 
     def get_raw_data(self):
         if self._raw_data is None:
             with CziFile(self.path) as czi:
                 self._scene = czi.scenes[0]
-                self._raw_data = self.scene.asarray()
+                self._raw_data = self._scene.asarray()
                 self._parsed_metadata = ET.fromstring(czi.metadata())
 
         return self._raw_data
 
-    def get_raw_slice(self, slice_id):
-        """Returns a slice of the data not resampled."""
-        return self.get_raw_data()[slice_id,:,:]
-
-    def get_raw_segment(self, start_id, stop_id):
-        """Returns a segment of the data not resampled."""
-        return self.self.get_raw_data()[start_id:stop_id, :, :]
-
-    def get_raw_data_dimensions(self):
+    def get_voxel_dims(self):
         if self._parsed_metadata is None:
             self.get_raw_data()
 
-        height = int(self.parsed_metadata.find('.//CameraFrameHeight').text)
-        width = int(self.parsed_metadata.find('.//CameraFrameWidth').text)
-        depth = int(self.parsed_metadata.find('.//DimensionZ').text)
-        return (depth, height, width)
-
-    def get_voxels_size(self):
-        if self._parsed_metadata is None:
-            self.get_raw_data()
-
-        x = float(self.parsed_metadata.find('.//ScalingX').text)
-        y = float(self.parsed_metadata.find('.//ScalingY').text)
-        z = float(self.parsed_metadata.find('.//ScalingZ').text)
+        x = float(self._parsed_metadata.find('.//ScalingX').text)
+        y = float(self._parsed_metadata.find('.//ScalingY').text)
+        z = float(self._parsed_metadata.find('.//ScalingZ').text)
         return np.array([z, x, y])
 
     def get_resampled_voxel_size(self):
-        return np.min(self.get_voxels_size())
+        return np.min(self.get_voxel_dims())
 
 
 class ObservationsList(UserList):
