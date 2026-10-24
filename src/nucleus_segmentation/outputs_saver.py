@@ -15,7 +15,7 @@ from .output_options import OUTPUT_OPTIONS
 from .visualization import ViewConfig, save_image_view
 
 
-class OutputManager:
+class OutputSaver:
     def __init__(self, observation, pipeline_results, output_folder, output_options):
         self.output_folder = Path(output_folder)
         self.output_folder.mkdir(parents=True, exist_ok=True)
