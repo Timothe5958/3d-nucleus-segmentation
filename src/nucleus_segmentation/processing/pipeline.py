@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from ..output_manager import OutputManager
+from ..outputs_saver import OutputSaver
 from . import post_processing, pre_processing, segmentation
 
 
@@ -90,7 +90,7 @@ def process_observations( # noqa : PLR0917, PLR0913
             progress_callback=progress_callback,
         )
 
-        output_manager = OutputManager(
+        output_manager = OutputSaver(
             observation,
             pipeline_results,
             output_folder,
