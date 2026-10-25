@@ -48,6 +48,7 @@ dev = [
     "ruff",
     "pytest",
     "jupyter-book",
+    "pyinstaller",
 ]
 
 # Ruff config
