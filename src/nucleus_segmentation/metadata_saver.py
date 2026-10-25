@@ -5,6 +5,7 @@ SECTIONS = ('observations')
 
 class MetadataCollector:
     def __init__(self):
+        self.data = {}
         for name in SECTIONS:
             self.data[name] = {}
 
