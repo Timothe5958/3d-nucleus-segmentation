@@ -13,6 +13,10 @@ OUTPUT_OPTIONS = {
     'Histograms': [
         'volumes',
         'centroid_density',
+        'elongations',
+        'sphericities',
+        'equivalent_diameters',
+        'distance_closest_neighbour',
     ],
     'Points cloud': [
         'centroids_position_3d_view',

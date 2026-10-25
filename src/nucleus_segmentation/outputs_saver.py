@@ -32,13 +32,12 @@ class OutputSaver:
                 f'Sauvegarde : {title}',
             )
 
-    def create_dir(self, sub_dir):
+    def get_dir_name(self, sub_dir):
         folder = self.output_folder / (self.observation.path.stem + '_' + self.start_date) / sub_dir
-        folder.mkdir(parents=True, exist_ok=True)
         return folder
 
     def save_pipeline_3d_views(self, progress_callback=None):
-        folder = self.create_dir('Pipeline (Expert only)')
+        folder = self.get_dir_name('Pipeline (Expert only)')
 
         for name in OUTPUT_OPTIONS['Pipeline (Expert only)']:
             if self.output_options['Pipeline (Expert only)'][name]:
@@ -65,7 +64,7 @@ class OutputSaver:
                 self.send_callback(progress_callback, name.replace('_', ' '))
 
     def save_boxplots(self, measurements, progress_callback=None):
-        folder = self.create_dir('Boxplots')
+        folder = self.get_dir_name('Boxplots')
 
         if self.output_options['Boxplots']['volumes']:
             save_boxplot(
@@ -116,7 +115,7 @@ class OutputSaver:
             self.send_callback(progress_callback, 'distance to closest neighbor')
 
     def save_histograms(self, measurements, progress_callback=None):
-        folder = self.create_dir('Histograms')
+        folder = self.get_dir_name('Histograms')
 
         if self.output_options['Histograms']['volumes']:
             save_histogram(
@@ -136,8 +135,47 @@ class OutputSaver:
             )
             self.send_callback(progress_callback, 'nuclei centroid density')
 
+        if self.output_options['Histograms']['elongations']:
+            save_histogram(
+                measurements.elongations,
+                output_folder=folder,
+                title=f'{self.observation.name} - elongations histogram',
+                labels=['Elongation', 'Number of nuclei'],
+            )
+            self.send_callback(progress_callback, 'nuclei centroid density')
+
+        if self.output_options['Histograms']['sphericities']:
+            save_histogram(
+                measurements.sphericities,
+                output_folder=folder,
+                title=f'{self.observation.name} - sphericities histogram',
+                labels=['Sphericity', 'Number of nuclei'],
+            )
+            self.send_callback(progress_callback, 'sphericities histogram')
+
+        if self.output_options['Histograms']['equivalent_diameters']:
+            save_histogram(
+                measurements.equivalent_diameters,
+                output_folder=folder,
+                title=f'{self.observation.name} - equivalent diameters histogram',
+                labels=['Equivalent diameter', 'Number of nuclei'],
+            )
+            self.send_callback(progress_callback, 'equivalent diameters histogram')
+
+        if self.output_options['Histograms']['distance_closest_neighbour']:
+            save_histogram(
+                measurements.get_nearest_distances(
+                    distance_max=50,
+                    num_neighbours_max=40,
+                ),
+                output_folder=folder,
+                title=f'{self.observation.name} - distance to closest neighbour histogram',
+                labels=['Distance to closest neighbour', 'Number of nuclei'],
+            )
+            self.send_callback(progress_callback, 'distance to closest neighbour histogram')
+
     def save_points_cloud(self, measurements, progress_callback=None):
-        folder = self.create_dir('Points cloud')
+        folder = self.get_dir_name('Points cloud')
 
         if self.output_options['Points cloud']['centroids_position_3d_view']:
             save_centroids_3d_view(
@@ -177,7 +215,7 @@ class OutputSaver:
             self.send_callback(progress_callback, 'nuclei centroid neighbours distribution')
 
     def save_3d_views(self, progress_callback=None):
-        folder = self.create_dir('3D views')
+        folder = self.get_dir_name('3D views')
 
         if self.output_options['3D views']['raw']:
             config = ViewConfig(
