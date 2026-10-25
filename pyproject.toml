@@ -34,7 +34,7 @@ dependencies = [
     "scikit-image>=0.25,<0.27",
     "scipy>=1.16,<1.17",
     "scikit-learn>=1.7,<1.8",
-    "napari[pyqt6,optional]>=0.8,<0.10",
+    "napari[pyside6,optional]>=0.8,<0.10",
     "PySide6",
 ]
 
