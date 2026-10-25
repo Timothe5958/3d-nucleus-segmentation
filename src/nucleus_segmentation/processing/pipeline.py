@@ -22,51 +22,63 @@ def process_observation(observation, options, progress_callback=None):
                 step_name,
             )
 
-    raw_data = observation.get_raw_data()
+    results = {'raw_data': observation.get_raw_data()}
 
-    pipeline_results = {'raw_data': raw_data}
+    def run_step(data, step_name, func, **kwargs):
+        """Run any step of the pipeline."""
+        report_step(step_name)
+        return func(data, **kwargs)
 
-    report_step('denoising')
-    pipeline_results['denoised_data'] = pre_processing.gaussian_denoise(
-        raw_data,
+    results['denoised_data'] = run_step(
+        results['raw_data'],
+        'denoising',
+        pre_processing.gaussian_denoise,
         ksize=options.gaussian_ksize,
     )
 
-    report_step('cropping')
-    pipeline_results['cropped_data'] = pre_processing.crop_background(
-        pipeline_results['denoised_data'],
+    results['cropped_data'] = run_step(
+        results['denoised_data'],
+        'cropping',
+        pre_processing.crop_background,
     )
 
-    report_step('resampling')
-    pipeline_results['resampled_data'] = pre_processing.resample_isotropic(
-        pipeline_results['cropped_data'],
-        observation.get_voxel_dims(),
+    results['resampled_data'] = run_step(
+        results['cropped_data'],
+        'resampling',
+        pre_processing.resample_isotropic,
+        voxel_sizes=observation.get_voxel_dims(),
     )
 
-    report_step('normalizing')
-    pipeline_results['normalized_data'] = pre_processing.normalize_intensity_shift_method(
-        pipeline_results['resampled_data'],
+    results['normalized_data'] = run_step(
+        results['resampled_data'],
+        'normalizing',
+        pre_processing.normalize_intensity_shift_method,
         cube_size=options.cube_size,
         sigma=options.sigma,
         alpha=options.alpha,
     )
 
-    report_step('segmentation')
-    pipeline_results['segmented_data'] = segmentation.binarization_multiotsu(
-        pipeline_results['normalized_data'],
+    results['segmented_data'] = run_step(
+        results['normalized_data'],
+        'segmentation',
+        segmentation.binarization_multiotsu,
         classes=3,
     )
 
-    report_step('cleanup')
-    pipeline_results['segmented_cleaned_data'] = post_processing.remove_small_artefacts(
-        pipeline_results['segmented_data'],
+    results['segmented_cleaned_data'] = run_step(
+        results['segmented_data'],
+        'cleanup',
+        post_processing.remove_small_artefacts,
         max_size=options.min_cell_size,
     )
 
-    report_step('labeling')
-    pipeline_results['labelled_data'] = post_processing.get_labelled_cells(pipeline_results['segmented_cleaned_data'])
+    results['labelled_data'] = run_step(
+        results['segmented_cleaned_data'],
+        'labeling',
+        post_processing.get_labelled_cells,
+    )
 
-    return pipeline_results
+    return results
 
 
 def process_observations( # noqa : PLR0917, PLR0913
