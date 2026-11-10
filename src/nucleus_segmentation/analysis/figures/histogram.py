@@ -28,11 +28,20 @@ def save_histogram(values, output_folder, title, labels, metadata):
         label='Mean ± SD',
     )
 
+    # Mean
+    ax.axvline(
+        mean,
+        color='#333333',
+        linestyle='-',
+        linewidth=1.2,
+        label=f'Mean = {mean:.1f}',
+    )
+
     # Median
     ax.axvline(
         median,
         color='#333333',
-        linestyle='-',
+        linestyle='--',
         linewidth=1.2,
         label=f'Median = {median:.1f}',
     )
@@ -45,7 +54,8 @@ def save_histogram(values, output_folder, title, labels, metadata):
         metadata,
         graph_information=(
             'Graph information',
-            f'The solid line indicates the median ({median:.1f}); '
+            f'The solid line indicates the mean ({mean:.1f}); '
+            f'The dotted line indicates the median ({median:.1f}); '
             f'the shaded area represents the mean ± standard deviation ({mean:.1f} ± {std:.1f}).'
         ),
     )
