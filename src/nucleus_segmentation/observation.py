@@ -25,7 +25,9 @@ class Observation:
         if self._raw_data is None:
             with CziFile(self.path) as czi:
                 self._scene = czi.scenes[0]
-                self._raw_data = self._scene.asarray()
+                # keep only the data with the DAPI marker
+                # others will be implemented later
+                self._raw_data = self._scene.asarray()[1]
                 self._parsed_metadata = ET.fromstring(czi.metadata())
 
         return self._raw_data
