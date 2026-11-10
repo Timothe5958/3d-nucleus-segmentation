@@ -1,8 +1,8 @@
 """Visualization tools."""
 
 from .napari_viewer import open_3d_view
-from .save_views import save_image_view
 from .view_config import ViewConfig
+from .view_saver import save_image_view
 
 __all__ = [
     'open_3d_view',
