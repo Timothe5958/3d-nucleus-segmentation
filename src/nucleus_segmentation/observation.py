@@ -58,7 +58,7 @@ class ObservationsList(UserList):
         self.path = Path(folder_path)
 
         observations = []
-        for czi_path in self.path.glob('*.czi'):
+        for czi_path in self.path.rglob('*.czi'):
             observations.append(Observation(path=czi_path))
 
         self.data = observations
