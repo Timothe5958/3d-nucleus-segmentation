@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-from ..outputs_saver import OutputSaver
 from . import post_processing, pre_processing, segmentation
 
 
@@ -79,46 +78,3 @@ def process_observation(observation, options, progress_callback=None):
     )
 
     return results
-
-
-def process_observations( # noqa : PLR0917, PLR0913
-    observations,
-    processing_options,
-    output_options,
-    output_folder,
-    log=False,
-    progress_callback=None,
-    save_dispatcher=None,
-):
-
-    for observation in observations:
-        if log:
-            print(f'Processing {observation.path.name}...')
-
-        # Compute the results in the second thread (current one)
-        pipeline_results = process_observation(
-            observation,
-            processing_options,
-            progress_callback=progress_callback,
-        )
-
-        output_manager = OutputSaver(
-            observation,
-            pipeline_results,
-            output_folder,
-            output_options,
-        )
-
-        # Save pipeline 3d view screenshots in the main thread (Napari viewer requirement)
-        if save_dispatcher is not None:
-            save_dispatcher(
-                output_manager.save_outputs,
-                progress_callback=progress_callback,
-            )
-
-        if progress_callback is not None:
-            progress_callback(
-                'observation_done',
-                observation.path.name,
-                '',
-            )
