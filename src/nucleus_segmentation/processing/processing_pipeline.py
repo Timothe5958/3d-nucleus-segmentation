@@ -6,10 +6,18 @@ from . import post_processing, pre_processing, segmentation
 @dataclass
 class ProcessingOptions:
     gaussian_ksize: int = 2
-    cube_size: int = 60
-    alpha: float = 0.3
     sigma: int = 8
     min_cell_size: int = 1000
+
+
+@dataclass
+class NormalizationOptions:
+    sigma: int = 10
+    alpha: float = 1
+    ref_th: float | None = None
+    ref_var: float = 185
+    cube_size: int = 60
+    shift: bool = False
 
 
 def process_observation(observation, options, progress_callback):
@@ -22,10 +30,10 @@ def process_observation(observation, options, progress_callback):
 
     results = {'raw_data': observation.get_raw_data()}
 
-    def run_step(data, step_name, func, **kwargs):
+    def run_step(data, step_name, func, *args, **kwargs):
         """Run any step of the pipeline."""
         report_step(step_name)
-        return func(data, **kwargs)
+        return func(data, *args, **kwargs)
 
     results['denoised_data'] = run_step(
         results['raw_data'],
@@ -40,27 +48,25 @@ def process_observation(observation, options, progress_callback):
         pre_processing.crop_background,
     )
 
-    results['resampled_data'] = run_step(
+    """results['resampled_data'] = run_step(
         results['cropped_data'],
         'resampling',
         pre_processing.resample_isotropic,
         voxel_sizes=observation.get_voxel_dims(),
-    )
+    )"""
+    results['resampled_data'] = results['cropped_data']
 
     results['normalized_data'] = run_step(
         results['resampled_data'],
         'normalizing',
         pre_processing.normalize_intensity_shift_method,
-        cube_size=options.cube_size,
-        sigma=options.sigma,
-        alpha=options.alpha,
+        options=NormalizationOptions(),
     )
 
     results['segmented_data'] = run_step(
         results['normalized_data'],
         'segmentation',
-        segmentation.binarization_multiotsu,
-        classes=3,
+        segmentation.binarization_otsu,
     )
 
     results['segmented_cleaned_data'] = run_step(
@@ -73,7 +79,8 @@ def process_observation(observation, options, progress_callback):
     results['labelled_data'] = run_step(
         results['segmented_cleaned_data'],
         'labeling',
-        post_processing.get_labelled_cells,
+        post_processing.split_agregates,
+        data_raw=results['cropped_data'],
     )
 
     return results
