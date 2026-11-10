@@ -12,14 +12,13 @@ class ProcessingOptions:
     min_cell_size: int = 1000
 
 
-def process_observation(observation, options, progress_callback=None):
+def process_observation(observation, options, progress_callback):
     def report_step(step_name):
-        if progress_callback is not None:
-            progress_callback(
-                'step',
-                observation.path.name,
-                step_name,
-            )
+        progress_callback(
+            'step',
+            observation.path.name,
+            step_name,
+        )
 
     results = {'raw_data': observation.get_raw_data()}
 

@@ -10,8 +10,8 @@ def process_observations(
     observations,
     processing_options,
     output_config,
-    progress_callback=None,
-    save_dispatcher=None,
+    progress_callback,
+    save_dispatcher,
 ):
 
     for observation in observations:
@@ -21,7 +21,7 @@ def process_observations(
         pipeline_results = processing_pipeline.process_observation(
             observation,
             processing_options,
-            progress_callback=progress_callback,
+            progress_callback,
         )
 
         output_manager = OutputSaver(
@@ -31,15 +31,13 @@ def process_observations(
         )
 
         # Save pipeline 3d view screenshots in the main thread (Napari viewer requirement)
-        if save_dispatcher is not None:
-            save_dispatcher(
-                output_manager.save_outputs,
-                progress_callback=progress_callback,
-            )
+        save_dispatcher(
+            output_manager.save_outputs,
+            progress_callback=progress_callback,
+        )
 
-        if progress_callback is not None:
-            progress_callback(
-                'observation_done',
-                observation.path.name,
-                '',
-            )
+        progress_callback(
+            'observation_done',
+            observation.path.name,
+            '',
+        )
