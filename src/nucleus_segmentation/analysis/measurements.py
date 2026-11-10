@@ -1,15 +1,51 @@
+from dataclasses import dataclass
+from datetime import datetime
+
 import numpy as np
 from scipy.spatial import cKDTree
 from skimage import measure
 
 
+@dataclass
+class PlotMetadata:
+    obs_name: tuple[str, str] = ('', '')
+    date_of_processing: tuple[str, str] = ('', '')
+    nb_nuclei: tuple[str, str] = ('', '')
+    voxel_size: tuple[str, str] = ('', '')
+    graph_information: tuple[str, str | None] = (None, None)
+    definition: tuple[str | None, str | None] = (None, None)
+
+
+@dataclass
+class MeasurementOptions:
+    neighbours_dist_max: int = 50
+    neighbours_nb_max: int = 40
+    centroids_distrib_bin_with: int = 15
+
+
 class NucleiMeasurements:
-    def __init__(self, labelled_data, observation):
+    def __init__(self, labelled_data, observation, options):
         self.labelled_data = labelled_data
+        self.observation_name = observation.name
         self.voxel_size_um = observation.get_resampled_voxel_size() * 1e6
+
         self.volumes = self._get_volumes(labelled_data, self.voxel_size_um)
         self._compute_properties()
         self.neighbours_distances = None
+        self.nb_nuclei = self.labelled_data.max()
+
+        self.start_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        # metadata
+        self.metadata = PlotMetadata(
+            obs_name=('Observation name', self.observation_name),
+            date_of_processing=('Date of processing', self.start_date),
+            nb_nuclei=('Number of nuclei', str(self.nb_nuclei)),
+            voxel_size=('Voxel size', f'{round(self.voxel_size_um, 3)} µm'),
+        )
+
+        # measurements options
+        self.options = options
 
 
     @staticmethod
@@ -70,7 +106,8 @@ class NucleiMeasurements:
         self.equivalent_diameters = np.array(equivalent_diameters) * self.voxel_size_um
         self.sphericities = np.array(sphericities)
 
-    def get_densities(self, bin_width):
+    def get_densities(self):
+        bin_width = self.options.centroids_distrib_bin_with
         centroids = self.centroids
 
         max_height = int(bin_width * (np.max(centroids[:, 0]) // bin_width + 1))
@@ -86,23 +123,23 @@ class NucleiMeasurements:
         return densities_per_cm2, bin_centers
 
 
-    def _compute_neighbours(self, distance_max, num_neighbours_max):
+    def _compute_neighbours(self):
         tree = cKDTree(self.centroids)
 
         distances, indices = tree.query(
             self.centroids,
-            k=num_neighbours_max + 1,
-            distance_upper_bound=distance_max,
+            k=self.options.neighbours_nb_max + 1,
+            distance_upper_bound=self.options.neighbours_dist_max,
         )
 
         self.neighbours_indices = indices[:, 1:]
         self.neighbours_distances = distances[:, 1:]
         self.neighbour_counts = np.sum(self.neighbours_distances != np.inf, axis=1)
 
-    def get_neighbours_distances(self, distance_max=None, num_neighbours_max=None):
-        # compute for the first time or compute again if new distance max
-        if self.neighbours_distances is None or distance_max is not None:
-            self._compute_neighbours(distance_max, num_neighbours_max)
+    def get_neighbours_distances(self):
+        # compute for the first time or compute again
+        if self.neighbours_distances is None:
+            self._compute_neighbours()
 
         return (
             self.neighbours_indices,
@@ -110,19 +147,16 @@ class NucleiMeasurements:
             self.neighbour_counts,
         )
 
-    def get_nearest_neighbours(self, distance_max=None, num_neighbours_max=None):
+    def get_nearest_neighbours(self):
         # compute for the first time or compute again if new distance max
-        if self.neighbours_distances is None or distance_max is not None:
-            self._compute_neighbours(distance_max, num_neighbours_max)
+        if self.neighbours_distances is None:
+            self._compute_neighbours()
 
         return self.neighbours_distances[:, 0]
 
-    def get_nearest_distances(self, distance_max=None, num_neighbours_max=None):
+    def get_nearest_distances(self):
         """Returns the distance of the closest centroid for each centroid
         that has another centroid in his range."""
 
-        nearest_distances = self.get_nearest_neighbours(
-            distance_max=distance_max,
-            num_neighbours_max=num_neighbours_max,
-        )
+        nearest_distances = self.get_nearest_neighbours()
         return nearest_distances[nearest_distances != np.inf]
