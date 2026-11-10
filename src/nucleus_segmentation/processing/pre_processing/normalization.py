@@ -1,15 +1,7 @@
-from dataclasses import dataclass
 from functools import cache
 
 import numpy as np
 from skimage import filters
-
-
-@dataclass
-class NormalizationOptions:
-    sigma: int = 15
-    alpha: float = 0.1
-    ref_th: float | None = None
 
 
 def split_in_cubes(data, cube_size=30, shift=False):
@@ -57,13 +49,35 @@ def cube_gaussian_weights(shape, sigma):
         ) / (2 * sigma**2)
     ).astype(np.float32)
 
-def from_cubes_to_normalized(data, cubes, cubes_coords, options: NormalizationOptions):
+
+def get_gaussian_matrix(data_shape, cube_size, sigma):
+    gaussian_data = np.zeros(np.array(data_shape) + cube_size // 2, dtype=np.float32)
+    gaussian_cube = cube_gaussian_weights(
+        (cube_size, cube_size, cube_size),
+        sigma,
+    )
+    for z0 in range(0, data_shape[0], cube_size):
+        for x0 in range(0, data_shape[1], cube_size):
+            for y0 in range(0, data_shape[2], cube_size):
+                zone = (
+                    slice(z0, z0 + cube_size),
+                    slice(x0, x0 + cube_size),
+                    slice(y0, y0 + cube_size),
+                )
+                gaussian_data[zone] += gaussian_cube[
+                    :gaussian_data[zone].shape[0],
+                    :gaussian_data[zone].shape[1],
+                    :gaussian_data[zone].shape[2],
+                ]
+    return gaussian_data
+
+
+def from_cubes_to_normalized(data, cubes, cubes_coords, options):
     if options.ref_th is None:
         ref_cube = find_reference_cube(cubes)
         options.ref_th = filters.threshold_otsu(ref_cube[ref_cube != 0])
 
     normalized_data = np.zeros(data.shape, dtype=np.float32)
-    gaussian_data = np.zeros(data.shape, dtype=np.float32)
 
     for cube, (z0, x0, y0) in zip(cubes, cubes_coords, strict=True):
         zone = (
@@ -76,9 +90,7 @@ def from_cubes_to_normalized(data, cubes, cubes_coords, options: NormalizationOp
         binary_cube = cube > cube_threshold
         cube_f = cube.astype(np.float32)
 
-        gaussian_data[zone] = cube_gaussian_weights(cube_f.shape, options.sigma)
-
-        if cube_threshold == 0:
+        if cube_threshold == 0 or cube_f[cube_f != 0].std() < options.ref_var:
             normalized_data[zone] = cube_f
             continue
 
@@ -88,32 +100,42 @@ def from_cubes_to_normalized(data, cubes, cubes_coords, options: NormalizationOp
 
         normalized_data[zone] = np.clip(np.rint(cube_f), 0, 65535)
 
-    return normalized_data, gaussian_data
+    return normalized_data
 
-def normalize_intensity_shift_method(data, cube_size=30, sigma=15, alpha=0.1):
-    norm_options = NormalizationOptions(sigma=sigma, alpha=alpha)
-
-    cubes, cubes_coords = split_in_cubes(data, cube_size=cube_size)
-    normalized, gaussian = from_cubes_to_normalized(
+def normalize_intensity_shift_method(data, options):
+    cubes, cubes_coords = split_in_cubes(data, cube_size=options.cube_size)
+    normalized = from_cubes_to_normalized(
         data,
         cubes,
         cubes_coords,
-        norm_options,
+        options,
     )
 
-    cubes_shift, cubes_coords_shift = split_in_cubes(data, cube_size=cube_size, shift=True)
-    normalized_shift, gaussian_shift = from_cubes_to_normalized(
+    options.shift = True
+    cubes_shift, cubes_coords_shift = split_in_cubes(data, cube_size=options.cube_size, shift=True)
+    normalized_shift = from_cubes_to_normalized(
         data,
         cubes_shift,
         cubes_coords_shift,
-        norm_options,
+        options,
     )
 
-    normalized *= gaussian
-    normalized_shift *= gaussian_shift
-    normalized += normalized_shift
-    gaussian += gaussian_shift
+    gaussian = get_gaussian_matrix(data.shape, options.cube_size, options.sigma)
+    gaussian_cropped = gaussian[
+        :-options.cube_size//2,
+        :-options.cube_size//2,
+        :-options.cube_size//2,
+    ]
+    gaussian_cropped_shift = gaussian[
+        options.cube_size//2:,
+        options.cube_size//2:,
+        options.cube_size//2:,
+    ]
 
-    np.divide(normalized, gaussian, out=normalized, where=gaussian > 0)
-    return normalized
+    normalized *= gaussian_cropped
+    normalized_shift *= gaussian_cropped_shift
+    normalized += normalized_shift
+    gaussian_cropped += gaussian_cropped_shift
+
+    return np.divide(normalized, gaussian_cropped, out=normalized, where=gaussian_cropped > 0)
 
