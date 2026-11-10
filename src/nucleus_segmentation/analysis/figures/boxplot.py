@@ -56,7 +56,7 @@ def save_boxplot_violin(values, output_folder, title, labels, metadata):
         body.set_edgecolor('#009E73')
         body.set_linewidth(0.8)
 
-    ax.boxplot(
+    boxplot = ax.boxplot(
         values,
         positions=[1],
         vert=True,
@@ -74,9 +74,16 @@ def save_boxplot_violin(values, output_folder, title, labels, metadata):
     ax.set_xlabel(labels[0])
     ax.set_ylabel(labels[1])
 
+    # add number of outliers and graph info to the metadata
+    n_outliers = len(boxplot['fliers'][0].get_ydata())
+    n_outliers_txt = f' (including {n_outliers} outliers in the boxplot)'
+    metadata_nb_nuclei = (metadata.nb_nuclei[0], metadata.nb_nuclei[1] + n_outliers_txt)
+
     metadata_boxplot = replace(
         metadata,
         graph_information=('Graph information', 'Boxes show the interquartile range (IQR) with the median as a line; '
         'whiskers extend to 1.5 × IQR; points beyond are outliers.'),
+        nb_nuclei=metadata_nb_nuclei,
     )
+
     save_fig(fig, output_folder, title + '.png', metadata_boxplot)
