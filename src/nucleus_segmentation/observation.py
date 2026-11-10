@@ -42,7 +42,7 @@ class Observation:
         return np.array([z, x, y])
 
     def get_resampled_voxel_size(self):
-        return np.min(self.get_voxel_dims())
+        return np.max(self.get_voxel_dims())
 
 
 class ObservationsList(UserList):
