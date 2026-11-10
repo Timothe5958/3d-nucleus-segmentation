@@ -1,3 +1,6 @@
+from dataclasses import dataclass
+from pathlib import Path
+
 OUTPUT_OPTIONS = {
     '3D views': [
         'raw',
@@ -35,3 +38,8 @@ OUTPUT_OPTIONS = {
         'labelled_data',
     ],
 }
+
+@dataclass
+class OutputConfig:
+    folder: Path
+    options: dict[str, dict[str, bool]]
