@@ -1,14 +1,17 @@
+import logging
 import sys
 from pathlib import Path
 
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
-from ..metadata_saver import MetadataCollector
 from .main_window import MainWindow
 
-metadata = MetadataCollector()
-
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s %(levelname)s %(name)s: %(message)s',
+    datefmt='%H:%M:%S',
+)
 
 def main():
     app = QApplication(sys.argv)
