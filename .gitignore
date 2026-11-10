@@ -3,10 +3,11 @@
 
 # data folder
 /data
+/data_J0
 
 # output folder
 */outputs
-*output
+/*_output
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
