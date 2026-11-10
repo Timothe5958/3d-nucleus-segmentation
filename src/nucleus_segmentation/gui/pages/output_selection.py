@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from ...output_options import OUTPUT_OPTIONS
+from ...output.options import OUTPUT_OPTIONS
 
 
 class OutputSelectionPage(QWidget):

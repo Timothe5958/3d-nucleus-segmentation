@@ -3,7 +3,7 @@ import traceback
 
 from PySide6.QtCore import QThread, Signal
 
-from ..processing.pipeline import process_observations
+from ..global_pipeline import process_observations
 
 
 class ProcessingWorker(QThread):
@@ -16,26 +16,20 @@ class ProcessingWorker(QThread):
         self,
         observations,
         processing_options,
-        output_options,
-        output_folder,
-        log=True,
+        output_config,
     ):
         super().__init__()
 
         self.observations = observations
         self.processing_options = processing_options
-        self.output_options = output_options
-        self.output_folder = output_folder
-        self.log = log
+        self.output_config = output_config
 
     def run(self):
         try:
             process_observations(
                 self.observations,
                 self.processing_options,
-                self.output_options,
-                self.output_folder,
-                log=self.log,
+                self.output_config,
                 progress_callback=self.progress_event.emit,
                 save_dispatcher=self.run_on_gui_thread,
             )

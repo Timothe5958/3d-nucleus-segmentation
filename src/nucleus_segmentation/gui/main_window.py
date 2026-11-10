@@ -7,7 +7,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from ..processing.pipeline import ProcessingOptions
+from ..output.options import OutputConfig
+from ..processing.processing_pipeline import ProcessingOptions
 from ..utils import format_elapsed_time
 from .pages import ObservationSelectionPage, OutputSelectionPage, ProgressPage
 from .worker import ProcessingWorker
@@ -78,20 +79,20 @@ class MainWindow(QWidget):
 
     def run_processing(self):
         selected_observations = self.observation_page.get_selected_observations()
-        output_options = self.output_page.get_output_options()
 
         processing_options = ProcessingOptions()
 
-        output_folder = (
-            self.observation_page.selected_folder.parent / 'nucleus_segmentation_output'
+        output_config = OutputConfig(
+            folder=self.observation_page.selected_folder.parent / 'nucleus_segmentation_output',
+            options=self.output_page.get_output_options(),
         )
 
         # number of steps for each observation
         # (number of steps in the pipeline + number of output figures)
         nb_steps = sum(
             sum(section.values())
-            for section in output_options.values()
-        ) + len(output_options['Pipeline (Expert only)'])
+            for section in output_config.options.values()
+        ) + len(output_config.options['Pipeline (Expert only)'])
 
         self.progress_page.initial_update(len(selected_observations), nb_steps)
         self.go_to_progress_page()
@@ -99,9 +100,7 @@ class MainWindow(QWidget):
         self.worker = ProcessingWorker(
             selected_observations,
             processing_options,
-            output_options,
-            output_folder,
-            log=True,
+            output_config,
         )
 
         self.worker.progress_event.connect(
