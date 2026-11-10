@@ -20,7 +20,7 @@ class PlotMetadata:
 class MeasurementOptions:
     neighbours_dist_max: int = 50
     neighbours_nb_max: int = 40
-    centroids_distrib_bin_with: int = 15
+    centroids_density_bin_with: int = 15
 
 
 class NucleiMeasurements:
@@ -57,6 +57,10 @@ class NucleiMeasurements:
     @property
     def get_y_bounds(self):
         return (0, self.labelled_data.shape[2])
+
+    @property
+    def get_x_bounds(self):
+        return (0, self.labelled_data.shape[1])
 
 
     def _compute_properties(self):
@@ -107,20 +111,21 @@ class NucleiMeasurements:
         self.sphericities = np.array(sphericities)
 
     def get_densities(self):
-        bin_width = self.options.centroids_distrib_bin_with
+        bin_width = self.options.centroids_density_bin_with
         centroids = self.centroids
 
-        max_height = int(bin_width * (np.max(centroids[:, 0]) // bin_width + 1))
+        max_height = (bin_width * np.max(centroids[:, 0])) // bin_width + 1
         bins = np.arange(np.min(centroids[:, 0]), max_height + bin_width, bin_width)
 
         nuclei_counts, bin_edges = np.histogram(centroids[:, 0], bins=bins)
         bin_centers = bin_edges[:-1] + (bin_width / 2)
 
         y_min, y_max = self.get_y_bounds
-        bin_surface = (bin_width / np.cos(np.pi / 4)) * (y_max - y_min) * 2
+        x_min, x_max = self.get_x_bounds
+        bin_volume = bin_width * (y_max - y_min) * (x_max - x_min)
 
-        densities_per_cm2 = nuclei_counts / (bin_surface * 1e-8)
-        return densities_per_cm2, bin_centers
+        densities_per_100um_cubes = nuclei_counts / (bin_volume * 1e-6)
+        return densities_per_100um_cubes, bin_centers
 
 
     def _compute_neighbours(self):
