@@ -12,7 +12,7 @@ def resample_isotropic(data, voxel_sizes):
     in order to avoid too much computation and approximation because of the interpolation.
 
     """
-    zoom_factor = voxel_sizes / np.min(voxel_sizes)
+    zoom_factor = voxel_sizes / np.max(voxel_sizes)
     return ndimage.zoom(
         data,
         zoom=zoom_factor,
