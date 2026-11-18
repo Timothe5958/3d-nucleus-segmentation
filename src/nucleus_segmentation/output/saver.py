@@ -2,7 +2,8 @@ from dataclasses import replace
 from datetime import datetime
 from pathlib import Path
 
-from ..analysis import (
+from ..figures_3d import ViewConfig, save_image_view
+from ..figures_analysis import (
     MeasurementOptions,
     NucleiMeasurements,
     save_boxplot_violin,
@@ -13,7 +14,6 @@ from ..analysis import (
     save_histogram,
     save_nuclei_axis_lengths_plot,
 )
-from ..figures_3d import ViewConfig, save_image_view
 from .options import OUTPUT_OPTIONS
 
 UNIT_DEFINITIONS = {

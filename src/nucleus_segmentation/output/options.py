@@ -43,3 +43,12 @@ OUTPUT_OPTIONS = {
 class OutputConfig:
     folder: Path
     options: dict[str, dict[str, bool]]
+
+@dataclass
+class PlotMetadata:
+    obs_name: tuple[str, str] = ('', '')
+    date_of_processing: tuple[str, str] = ('', '')
+    nb_nuclei: tuple[str, str] = ('', '')
+    voxel_size: tuple[str, str] = ('', '')
+    graph_information: tuple[str, str | None] = (None, None)
+    definition: tuple[str | None, str | None] = (None, None)
