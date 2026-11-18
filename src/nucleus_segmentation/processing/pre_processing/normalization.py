@@ -110,6 +110,7 @@ def normalize_intensity_shift_method(data, options):
         cubes_coords,
         options,
     )
+    del cubes, cubes_coords
 
     options.shift = True
     cubes_shift, cubes_coords_shift = split_in_cubes(data, cube_size=options.cube_size, shift=True)
@@ -119,6 +120,7 @@ def normalize_intensity_shift_method(data, options):
         cubes_coords_shift,
         options,
     )
+    del cubes_shift, cubes_coords_shift
 
     gaussian = get_gaussian_matrix(data.shape, options.cube_size, options.sigma)
     gaussian_cropped = gaussian[
@@ -136,6 +138,8 @@ def normalize_intensity_shift_method(data, options):
     normalized_shift *= gaussian_cropped_shift
     normalized += normalized_shift
     gaussian_cropped += gaussian_cropped_shift
+
+    del normalized_shift, gaussian_cropped_shift
 
     return np.divide(normalized, gaussian_cropped, out=normalized, where=gaussian_cropped > 0)
 
