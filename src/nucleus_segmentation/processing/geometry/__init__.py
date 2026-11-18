@@ -1,12 +1,15 @@
 """Geometry adjustments steps."""
 
-from .alignement import rotate
-from .origin import find_axis_origin
-from .scaffold import apply_scaffold_mask, find_scaffold_mask
+from .scaffold import (
+    estimate_scaffold_origin,
+    global_scaffold,
+    scaffold_mask_2d,
+    scaffold_mask_3d,
+)
 
 __all__ = [
-    'rotate',
-    'find_axis_origin',
-    'apply_scaffold_mask',
-    'find_scaffold_mask'
+    'scaffold_mask_2d',
+    'scaffold_mask_3d',
+    'global_scaffold',
+    'estimate_scaffold_origin',
 ]

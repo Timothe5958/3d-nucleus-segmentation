@@ -1,88 +1,93 @@
 import numpy as np
-from scipy import ndimage
-from skimage import morphology, segmentation
-
-from ..segmentation import binarization_otsu
+from scipy.signal import correlate
 
 
-def build_scaffold_mask(data, log=False):
-    if log:
-        print('Building base of scaffold mask...')
+def scaffold_mask_2d(voxel_size_m, include_bottom=True):
+    voxel_size_um = voxel_size_m * 1e6
 
-    binary_data = binarization_otsu(data)
+    width = int(250 // voxel_size_um)
+    height_parallel = int(250 // voxel_size_um)
+    height_triangle = width // 2
+    height = height_triangle + height_parallel
 
-    scaffold_mask = np.zeros_like(binary_data, dtype=bool)
-    for x in range(binary_data.shape[1]):
-        slice_x = binary_data[:, x, :]
-        if np.any(slice_x):
-            scaffold_mask[:, x, :] = morphology.convex_hull_image(slice_x)
+    scaffold_filled = np.zeros((height, width))
+    scaffold_filled[height_triangle:height, :] = 1
 
-    # fill holes and closing
-    scaffold_mask = ndimage.binary_fill_holes(scaffold_mask)
-    return morphology.closing(scaffold_mask, morphology.ball(2))
+    if include_bottom:
+        for z in range(height_triangle):
+            max_x = width - z
+            min_x = z
+            scaffold_filled[height_triangle - 1 - z, min_x:max_x] = 1
 
-
-def extract_scaffold_edges(scaffold_mask, log=False):
-    if log:
-        print('Extracting scaffold edge...')
-
-    scaffold = segmentation.find_boundaries(scaffold_mask, mode='outer')
-    scaffold_projected = np.any(scaffold, axis=2, keepdims=True)
-    scaffold_projected_3d = np.repeat(scaffold_projected, scaffold.shape[2], axis=2)
-
-    scaffold_sides = np.zeros_like(scaffold_projected_3d, dtype=bool)
-
-    for z in range(scaffold_sides.shape[0]):
-        slice_xy = scaffold_projected_3d[z,:,:]
-
-        x_left = None # now didn't find any pixel from left
-        for x in range (slice_xy.shape[0]):
-            if np.any(slice_xy[x, :]):
-                x_left = x
-                break
-
-        for x in range (slice_xy.shape[0]-1,-1,-1):
-            if np.any(slice_xy[x, :]):
-                x_right = x
-                break
-
-        if x_left is None or x_right is None:
-            continue
-
-        scaffold_sides[z, :x_left+1, :] = slice_xy[:x_left+1, :]
-        scaffold_sides[z, x_right:, :] = slice_xy[x_right:, :]
-
-    filled_scaffold = np.zeros_like(scaffold_sides, dtype=bool)
-    for z in range(scaffold_sides.shape[0]):
-        slice_xy = scaffold_sides[z,:,:]
-        filled_slice = morphology.convex_hull_image(slice_xy)
-        filled_scaffold[z, :, :] = filled_slice
-
-    return filled_scaffold
-
-"""def estimate_scaffold_boundary(filled_scaffold, x0, z0, angle):
-
-def extrude_scaffold_mask(mask_boundary_2d, y_size):"""
+    return scaffold_filled
 
 
-def apply_scaffold_mask(data, scaffold_mask):
-    return np.where(scaffold_mask, data, 0)
+def scaffold_mask_3d(voxel_size_m, depth_voxels):
+    voxel_size_um = voxel_size_m * 1e6
+
+    width = int(250 // voxel_size_um)
+    height_parallel = int(250 // voxel_size_um)
+    height_triangle = width // 2
+    height = height_triangle + height_parallel
+
+    scaffold_filled = np.zeros((height, width, depth_voxels))
+    scaffold_filled[height_triangle:height, :, :] = 1
+
+    for z in range(height_triangle):
+        max_x = width - z
+        min_x = z
+        scaffold_filled[height_triangle - 1 - z, min_x:max_x, :] = 1
+
+    return scaffold_filled
 
 
-def find_scaffold_mask(data, x0, z0, log=False):
-    scaffold_mask = build_scaffold_mask(data, log=log)
+def global_scaffold(data, voxel_size, include_bottom=False):
+    z_bottom, x_bottom = estimate_scaffold_origin(data, voxel_size=voxel_size)
+    scaffold_2d = scaffold_mask_2d(voxel_size, include_bottom=include_bottom)
 
-    filled_scaffold = extract_scaffold_edges(scaffold_mask, log=log)
+    # crop the offset bottom of the scaffolds (outside image)
+    if z_bottom < 0:
+        scaffold_2d = scaffold_2d[-z_bottom:, :]
+        z_bottom = 0
 
-    """boundary_mask = estimate_scaffold_boundary(
-        filled_scaffold,
-        x0,
-        z0,
+    # crop the offset top
+    top_offset = z_bottom + scaffold_2d.shape[0] - data.shape[0]
+    if top_offset > 0:
+        scaffold_2d = scaffold_2d[:-top_offset, :]
+
+    # create the global scaffolds
+    scaffold_2d_global = np.zeros(data.shape[:2])
+    scaffold_2d_global[
+        z_bottom:z_bottom + scaffold_2d.shape[0],
+        x_bottom:x_bottom + scaffold_2d.shape[1],
+    ] = scaffold_2d
+
+    return scaffold_2d_global
+
+
+def estimate_scaffold_origin(data, voxel_size):
+    scaffold_2d = scaffold_mask_2d(voxel_size)
+    projected_data = np.any(data, axis=2)
+
+    scores = correlate(
+        projected_data,
+        scaffold_2d,
+        mode='full',
+        method='fft',
     )
 
-    return extrude_scaffold_mask(
-        boundary_mask,
-        data.shape[1],
-    )"""
+    best_score = 0
+    origin = (0, 0)
 
-    return filled_scaffold
+    for x in range(scores.shape[1]):
+        scores_col = scores[:, x]
+        z = np.where(scores_col == scores_col.max())[0].max()
+        score = scores_col[z]
+
+        if score > best_score:
+            best_score = score
+            origin = (
+                z - (scaffold_2d.shape[0] - 1),
+                x - (scaffold_2d.shape[1] - 1),
+            )
+    return origin

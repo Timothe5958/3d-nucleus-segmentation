@@ -3,7 +3,7 @@ import napari
 import numpy as np
 from napari.utils.colormaps import DirectLabelColormap
 
-from ..processing.geometry.origin import find_axis_origin
+from ..processing.geometry import estimate_scaffold_origin
 from .view_config import ViewConfig
 
 
@@ -119,7 +119,7 @@ def open_3d_view(data, camera_rotation):
     )
 
     # Add origin to the view
-    origin = find_axis_origin(data)
+    origin = estimate_scaffold_origin(data)
     viewer.add_points(
         [origin],
         size=4,
